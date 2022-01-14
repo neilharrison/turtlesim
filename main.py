@@ -1,74 +1,18 @@
 import tkinter as tk
-from tkinter import colorchooser
-from PIL import Image, ImageTk
+import TurtleClass as tc #tc is a bit close to tk
 
 window = tk.Tk()
+window.title("Turtle Sim")
 
 canvas = tk.Canvas(window, bg="white", height=300, width=300)
 canvas.grid(column=0, row=0, columnspan=4)
 
+turtle = tc.Turtle(canvas)
 
-
-class Turtle:
-    
-    def __init__(self):
-        self.coords = [150, 150]
-        self.load_sprite()
-        self.pen = True
-        self.colour = '#000000'
-
-    def load_sprite(self, filename="turtle.png"):
-        image = Image.open(filename)
-        resizeimage = image.resize((30,int(30*image.size[0]/image.size[1])))
-        self.loadTurtle = ImageTk.PhotoImage(resizeimage)
-        self.turtle_sprite = canvas.create_image(self.coords[0]-15,self.coords[1]-resizeimage.size[1]/2,anchor=tk.NW, image=self.loadTurtle)
-    
-    def move_up(self):
-        #up is down!
-        if self.pen:
-            canvas.create_line(self.coords[0], self.coords[1], self.coords[0], self.coords[1] - 10, fill=self.colour, width=1)
-        canvas.move(self.turtle_sprite,0,-10)
-        self.coords[1] -= 10
-
-
-    def move_down(self):
-        if self.pen:
-            canvas.create_line(self.coords[0], self.coords[1], self.coords[0], self.coords[1] + 10, fill=self.colour, width=1)
-        canvas.move(self.turtle_sprite,0,10)
-        self.coords[1] += 10
-
-
-    def move_left(self):
-        if self.pen:
-            canvas.create_line(self.coords[0], self.coords[1], self.coords[0] - 10, self.coords[1], fill=self.colour, width=1)
-        canvas.move(self.turtle_sprite,-10,0)
-        self.coords[0] -= 10
-
-
-    def move_right(self):
-        if self.pen:
-            canvas.create_line(self.coords[0], self.coords[1], self.coords[0] + 10, self.coords[1], fill=self.colour, width=1)
-        canvas.move(self.turtle_sprite,10,0)
-        self.coords[0] += 10
-
-    def turn_left(self):
-        pass
-
-    def turn_right(self):
-        pass
-
-    def pen_on_off(self):
-        self.pen = not self.pen
-
-    def pick_colour(self):
-        self.colour = colorchooser.askcolor(title="Pick a colour!")[1]
-
-turtle = Turtle()
-
-tk.Button(window, text="↑", command=turtle.move_up).grid(column=0, row=1)
-tk.Button(window, text="↓", command=turtle.move_down).grid(column=1, row=1)
-tk.Button(window, text="←", command=turtle.move_left).grid(column=2, row=1)
-tk.Button(window, text="→", command=turtle.move_right).grid(column=3, row=1)
+tk.Button(window, text="↑", command=lambda : turtle.move("Up")).grid(column=0, row=1)
+tk.Button(window, text="↓", command=lambda : turtle.move("Down")).grid(column=1, row=1)
+tk.Button(window, text="←", command=lambda : turtle.move("Left")).grid(column=2, row=1)
+tk.Button(window, text="→", command=lambda : turtle.move("Right")).grid(column=3, row=1)
 tk.Button(window, text="↰", command=turtle.turn_left).grid(column=1, row=2)
 tk.Button(window, text="↱", command=turtle.turn_left).grid(column=2, row=2)
 tk.Button(window, text="pen", command=turtle.pen_on_off).grid(column=0, row=2)

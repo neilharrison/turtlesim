@@ -1,12 +1,13 @@
     TO DO:
     Arrow key control
+    rotate sprite
     Reset
-    Colours
     Eraser
     Shape drawing
     Smiley face
     Go to point
     Drag to new start point
+    Edge detection
     Obstacle avoidance
     Hoover mode
     Filling in shapes
@@ -14,5 +15,6 @@
     Allow user to change turtle
     
     DONE:
+    Colours
     Lines on off
     Change turtle to image
