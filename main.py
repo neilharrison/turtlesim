@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import colorchooser
 from PIL import Image, ImageTk
 
 window = tk.Tk()
@@ -14,6 +15,7 @@ class Turtle:
         self.coords = [150, 150]
         self.load_sprite()
         self.pen = True
+        self.colour = '#000000'
 
     def load_sprite(self, filename="turtle.png"):
         image = Image.open(filename)
@@ -24,28 +26,28 @@ class Turtle:
     def move_up(self):
         #up is down!
         if self.pen:
-            canvas.create_line(self.coords[0], self.coords[1], self.coords[0], self.coords[1] - 10, fill="black", width=1)
+            canvas.create_line(self.coords[0], self.coords[1], self.coords[0], self.coords[1] - 10, fill=self.colour, width=1)
         canvas.move(self.turtle_sprite,0,-10)
         self.coords[1] -= 10
 
 
     def move_down(self):
         if self.pen:
-            canvas.create_line(self.coords[0], self.coords[1], self.coords[0], self.coords[1] + 10, fill="black", width=1)
+            canvas.create_line(self.coords[0], self.coords[1], self.coords[0], self.coords[1] + 10, fill=self.colour, width=1)
         canvas.move(self.turtle_sprite,0,10)
         self.coords[1] += 10
 
 
     def move_left(self):
         if self.pen:
-            canvas.create_line(self.coords[0], self.coords[1], self.coords[0] - 10, self.coords[1], fill="black", width=1)
+            canvas.create_line(self.coords[0], self.coords[1], self.coords[0] - 10, self.coords[1], fill=self.colour, width=1)
         canvas.move(self.turtle_sprite,-10,0)
         self.coords[0] -= 10
 
 
     def move_right(self):
         if self.pen:
-            canvas.create_line(self.coords[0], self.coords[1], self.coords[0] + 10, self.coords[1], fill="black", width=1)
+            canvas.create_line(self.coords[0], self.coords[1], self.coords[0] + 10, self.coords[1], fill=self.colour, width=1)
         canvas.move(self.turtle_sprite,10,0)
         self.coords[0] += 10
 
@@ -58,6 +60,9 @@ class Turtle:
     def pen_on_off(self):
         self.pen = not self.pen
 
+    def pick_colour(self):
+        self.colour = colorchooser.askcolor(title="Pick a colour!")[1]
+
 turtle = Turtle()
 
 tk.Button(window, text="↑", command=turtle.move_up).grid(column=0, row=1)
@@ -67,5 +72,7 @@ tk.Button(window, text="→", command=turtle.move_right).grid(column=3, row=1)
 tk.Button(window, text="↰", command=turtle.turn_left).grid(column=1, row=2)
 tk.Button(window, text="↱", command=turtle.turn_left).grid(column=2, row=2)
 tk.Button(window, text="pen", command=turtle.pen_on_off).grid(column=0, row=2)
+tk.Button(window, text="colour", command=turtle.pick_colour).grid(column=3, row=2)
+
 
 window.mainloop()
