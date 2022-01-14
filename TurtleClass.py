@@ -8,16 +8,24 @@ class Turtle:
     def __init__(self, canvas): 
         self.canvas = canvas
         self.coords = np.array([150, 150])
-        self.load_sprite()
+        self.load_sprite_file()
+        self.load_sprite_canvas()
         self.pen = True
         self.colour = '#000000'
 
-    def load_sprite(self, filename="turtle.png"):
+    def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
-        resizeimage = image.resize((30,int(30*image.size[0]/image.size[1])))
-        self.loadTurtle = ImageTk.PhotoImage(resizeimage)
-        self.turtle_sprite = self.canvas.create_image(self.coords[0]-15,self.coords[1]-resizeimage.size[1]/2,anchor=tk.NW, image=self.loadTurtle)
+        self.resizeimage = image.resize((30,int(30*image.size[0]/image.size[1])))
     
+    def load_sprite_canvas(self):
+        self.loadTurtle = ImageTk.PhotoImage(self.resizeimage)
+        self.turtle_sprite = self.canvas.create_image(self.coords[0]-15,self.coords[1]-self.resizeimage.size[1]/2,anchor=tk.NW, image=self.loadTurtle)
+    
+    def rotate(self,angle):
+        self.canvas.delete(self.turtle_sprite)
+        self.resizeimage = self.resizeimage.rotate(angle)
+        self.load_sprite_canvas()
+
     def move(self, dir, dist=10):
         if dir == "Up":
             coord_change = np.array([0,-1])
@@ -35,12 +43,8 @@ class Turtle:
         self.canvas.move(self.turtle_sprite,coord_change[0],coord_change[1])
         self.coords += coord_change
 
+        
 
-    def turn_left(self):
-        pass
-
-    def turn_right(self):
-        pass
 
     def pen_on_off(self):
         self.pen = not self.pen
