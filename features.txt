@@ -1,7 +1,4 @@
     TO DO:
-    Arrow key control
-    rotate sprite
-    Reset
     Eraser
     Shape drawing
     Smiley face
@@ -18,3 +15,6 @@
     Colours
     Lines on off
     Change turtle to image
+    rotate sprite
+    Arrow key control
+    Reset
