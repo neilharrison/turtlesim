@@ -10,6 +10,7 @@
     Filling in shapes
     Resizing window
     Allow user to change turtle
+    delete obstacles
     
     DONE:
     Colours
