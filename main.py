@@ -27,7 +27,6 @@ def mouse_obs(event):
     turtle.obstacle_mouse(event.x,event.y)
 def obs_remove(event):
     turtle.obstacle_remove(event.x,event.y)
-    
 
 
 tk.Button(window, text="↑", command=lambda : turtle.move("Up")).grid(column=0, row=1)

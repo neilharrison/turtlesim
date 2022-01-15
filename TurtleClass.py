@@ -14,6 +14,7 @@ class Turtle:
         self.colour = '#000000'
         self.angle = 0
         self.obs_flag = False
+        self.turtle_flag = False
 
     def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
@@ -40,19 +41,21 @@ class Turtle:
             coord_change = np.array([1,0])
         
         coord_change = coord_change*dist
+        self.move_to(self.coords[0]+coord_change[0],self.coords[1]+coord_change[1])
 
-        overlaps = list(self.canvas.find_overlapping(self.coords[0], self.coords[1], self.coords[0]+coord_change[0],self.coords[1]+coord_change[1]))
+    def move_to(self,x,y):
+        overlaps = list(self.canvas.find_overlapping(self.coords[0], self.coords[1], x,y))
         crash = False
         for i in overlaps:
             if self.canvas.itemconfig(i)["tags"][-1] == "obstacle" or self.canvas.itemconfig(i)["tags"][-1] == "obstacle current":
                 crash = True
-                
+
         buffer = 2
-        if not crash and (buffer < self.coords[0]+coord_change[0] < self.canvas.winfo_width()-buffer) and (buffer < self.coords[1]+coord_change[1] < self.canvas.winfo_height()-buffer):
+        if not crash and (buffer < x < self.canvas.winfo_width()-buffer) and (buffer < y < self.canvas.winfo_height()-buffer):
             if self.pen:
-                self.canvas.create_line(self.coords[0], self.coords[1], self.coords[0]+coord_change[0], self.coords[1]+coord_change[1], fill=self.colour, width=1, tag="line")
-            self.canvas.move(self.turtle_sprite,coord_change[0],coord_change[1])
-            self.coords += coord_change
+                self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=1, tag="line")
+            self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
+            self.coords = np.array([x,y])
 
     def reset(self):
         #slightly off centre but not a big issue
@@ -62,11 +65,22 @@ class Turtle:
         #self.load_sprite_canvas() loaded again in rotate
 
     def obstacle_mouse(self,xnew,ynew):
+        #Todo - make sure obstacle doesnt contain turtle
+            # - Add indicator for when first click is done
         if not self.obs_flag:
+            if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  
+                self.turtle_flag = True
             self.obstacle_coords = [xnew,ynew]
             self.obs_flag = True
         else:
-            self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
+            if self.turtle_flag:
+                tmp = self.pen
+                self.pen = False
+                self.move_to(xnew,ynew)
+                self.pen = tmp
+                self.turtle_flag = False
+            else:
+                self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
             self.obs_flag = False
     
     def obstacle_remove(self,x,y):

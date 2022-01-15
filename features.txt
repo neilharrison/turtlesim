@@ -2,15 +2,12 @@
     Eraser
     Shape drawing
     Smiley face
-    Go to point
-    Drag to new start point
-    Edge detection
-    Obstacle avoidance
+    Drag to new start point?
     Hoover mode
     Filling in shapes
     Resizing window
     Allow user to change turtle
-    delete obstacles
+    
     
     DONE:
     Colours
@@ -19,3 +16,7 @@
     rotate sprite
     Arrow key control
     Reset
+    Edge detection
+    Obstacle avoidance
+    delete obstacles
+     Go to point
