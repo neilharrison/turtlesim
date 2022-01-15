@@ -1,14 +1,24 @@
-Turtle Sim
+<h1> Turtle Sim </h1>
 
-Keyboard commands:
+<b>Keyboard commands:</b>
+
 Arrow keys and WASD: move turtle
+
 Q and E: rotate turtle
+
 R: Reset window
+
 Space: Turn pen on/off
+
 Escape: Exit window
 
-Mouse Control:
+
+<b> Mouse Control:</b>
+
 Left click: 
+
     place obstacle - define two corners
+    
     move turtle - click turtle, then to target
+
 Double click: remove obstacle
