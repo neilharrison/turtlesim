@@ -39,17 +39,17 @@ class Turtle:
             coord_change = np.array([1,0])
 
         coord_change = coord_change*dist
-
-        if self.pen:
-            self.canvas.create_line(self.coords[0], self.coords[1], self.coords[0]+coord_change[0], self.coords[1]+coord_change[1], fill=self.colour, width=1)
-        self.canvas.move(self.turtle_sprite,coord_change[0],coord_change[1])
-        self.coords += coord_change
+        buffer = 2
+        if (buffer < self.coords[0]+coord_change[0] < self.canvas.winfo_width()-buffer) and (buffer < self.coords[1]+coord_change[1] < self.canvas.winfo_height()-buffer):
+            if self.pen:
+                self.canvas.create_line(self.coords[0], self.coords[1], self.coords[0]+coord_change[0], self.coords[1]+coord_change[1], fill=self.colour, width=1)
+            self.canvas.move(self.turtle_sprite,coord_change[0],coord_change[1])
+            self.coords += coord_change
 
     def reset(self):
         #slightly off centre but not a big issue
-        self.coords=np.array([self.canvas.winfo_height()/2, self.canvas.winfo_width()/2])
+        self.coords=np.array([self.canvas.winfo_width()/2, self.canvas.winfo_height()/2])
         self.canvas.delete("all")
-        print(self.angle)
         self.rotate(-self.angle)
         #self.load_sprite_canvas() loaded again in rotate
 
