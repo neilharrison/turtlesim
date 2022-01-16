@@ -82,22 +82,26 @@ class Turtle:
         #self.load_sprite_canvas() loaded again in rotate
 
     def obstacle_mouse(self,xnew,ynew):
+        # Check if first or second click
         if not self.obs_flag:
-            if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  
+            if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  #clicked on turtle?
                 self.turtle_flag = True
             else:
-                self.indicator = self.canvas.create_oval(280,20,290,10,fill="black")
-            self.obstacle_coords = [xnew,ynew]
-            self.obs_flag = True
-        else:
+                # Clicked outside canvas? usually when resizing window
+                if self.within_range([xnew,ynew], [0,0],[self.canvas.winfo_width()-10, self.canvas.winfo_height()-10]): 
+                    self.indicator = self.canvas.create_oval(self.canvas.winfo_width()-20,20,self.canvas.winfo_width()-10,10,fill="black")
+                    self.obstacle_coords = [xnew,ynew]
+                    self.obs_flag = True
+        else: # Second click
             if self.turtle_flag:
-                tmp_pen = self.pen #keep current pen state for when finished
+                tmp_pen = self.pen # keep current pen state for when finished
                 self.pen = False
                 self.move_to(xnew,ynew)
                 self.pen = tmp_pen
                 self.turtle_flag = False
             else:
-                if  not(self.within_range(self.coords,self.obstacle_coords,[xnew,ynew])): 
+                # Check if new obstacle will enclose turtle
+                if not(self.within_range(self.coords,self.obstacle_coords,[xnew,ynew])): 
                     self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
                 self.canvas.delete(self.indicator)
             self.obs_flag = False

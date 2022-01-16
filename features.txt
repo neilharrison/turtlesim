@@ -2,9 +2,7 @@
     Eraser
     Smiley face
     Drag to new start point?
-    Hoover mode
     Filling in shapes
-    Resizing window
     Allow user to change turtle
     
     
@@ -20,3 +18,5 @@
     delete obstacles
     Go to point
     Shape drawing
+    Resizing window
+    Hoover mode (Kind of)

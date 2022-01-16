@@ -5,7 +5,12 @@ window = tk.Tk()
 window.title("Turtle Sim")
 
 canvas = tk.Canvas(window, bg="white", height=300, width=300)
-canvas.grid(column=0, row=0, columnspan=4)
+window.rowconfigure(0,weight=1)
+window.columnconfigure(0,weight=1)
+window.columnconfigure(1,weight=1)
+window.columnconfigure(2,weight=1)
+window.columnconfigure(3,weight=1)
+canvas.grid(column=0, row=0, columnspan=4, sticky='nswe')
 
 turtle = tc.Turtle(canvas)
 
