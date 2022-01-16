@@ -67,10 +67,11 @@ class Turtle:
 
     def obstacle_mouse(self,xnew,ynew):
         #Todo - make sure obstacle doesnt contain turtle
-            # - Add indicator for when first click is done
         if not self.obs_flag:
             if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  
                 self.turtle_flag = True
+            else:
+                self.indicator = self.canvas.create_oval(280,20,290,10,fill="black")
             self.obstacle_coords = [xnew,ynew]
             self.obs_flag = True
         else:
@@ -82,6 +83,7 @@ class Turtle:
                 self.turtle_flag = False
             else:
                 self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
+                self.canvas.delete(self.indicator)
             self.obs_flag = False
     
     def obstacle_remove(self,x,y):
@@ -99,29 +101,37 @@ class Turtle:
         self.pen = False
         # Ugly but otherwise move is too quick, 
         # without update() - no display update until func finished
+        self.rotate(-self.angle)
         for i in range(10):
             self.move("Up",d/20)
             self.canvas.update()
+        self.rotate(-90)
         self.pen = True
         for i in range(10):
-            self.move("Right",d/20)
+            self.move("Right",d/20)    
             self.canvas.update()
+        self.rotate(-90)
         for i in range(10):
             self.move("Down",d/10)
             self.canvas.update()
+        self.rotate(-90)
         for i in range(10):
             self.move("Left",d/10)
             self.canvas.update()
+        self.rotate(-90)
         for i in range(10):
             self.move("Up",d/10)
             self.canvas.update()
+        self.rotate(-90)
         for i in range(10):
             self.move("Right",d/20)
             self.canvas.update()
+        self.rotate(-90)
         self.pen = False
         for i in range(10):
             self.move("Down",d/20)
             self.canvas.update()
+        self.rotate(180)
         self.pen = True
 
     def move_circle(self,r):
@@ -131,17 +141,23 @@ class Turtle:
         for i in range(10):
             self.move("Up",r/10)
             self.canvas.update()
+        self.rotate(-90)
         self.pen = True
         for i in range(360):
-            x = centre[0]+r*math.sin(i * math.pi/180+math.pi)
-            y = centre[1]+r*math.cos(i * math.pi/180+math.pi)
+            x = centre[0]+r*math.sin(-i * math.pi/180+math.pi)
+            y = centre[1]+r*math.cos(-i * math.pi/180+math.pi)
             self.move_to(x,y)
             if i%4==0:
                 self.canvas.update()
+            if i%90==0:
+                #Small rotations mess up turtle image
+                self.rotate(-90)
         self.pen = False
+        self.rotate(-90)
         for i in range(10):
             self.move("Down",r/10)
             self.canvas.update()
+        self.rotate(180)
         self.pen = True
         
     

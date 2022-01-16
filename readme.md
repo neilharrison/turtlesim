@@ -10,6 +10,10 @@ R: Reset window
 
 Space: Turn pen on/off
 
+C: Draw Circle
+
+M: Draw Square
+
 Escape: Exit window
 
 

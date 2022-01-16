@@ -19,7 +19,7 @@ def keypress_manager(event):
     elif event.keysym == "space":
         turtle.pen_on_off()
     elif event.keysym == "m":
-        turtle.move_square(50)
+        turtle.move_square(100)
     elif event.keysym == "c":
         turtle.move_circle(50)
     elif event.keysym == "r":
