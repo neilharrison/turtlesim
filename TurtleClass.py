@@ -3,6 +3,7 @@ from tkinter import colorchooser
 from PIL import Image, ImageTk
 import numpy as np
 import math
+import random
 
 class Turtle:
     
@@ -29,9 +30,10 @@ class Turtle:
         self.canvas.delete(self.turtle_sprite)
         self.resizeimage = self.resizeimage.rotate(angle)
         self.angle+=angle
+        self.angle = self.angle%360
         self.load_sprite_canvas()
 
-    def move(self, dir, dist=10):
+    def move(self, dir, dist=10,run_over=True):
         if dir == "Up" or dir=="w":
             coord_change = np.array([0,-1])
         elif dir == "Down" or dir=="s":
@@ -42,22 +44,36 @@ class Turtle:
             coord_change = np.array([1,0])
         
         coord_change = coord_change*dist
-        self.move_to(self.coords[0]+coord_change[0],self.coords[1]+coord_change[1])
+        return self.move_to(self.coords[0]+coord_change[0],self.coords[1]+coord_change[1],run_over)
 
-    def move_to(self,x,y):
+    def move_to(self,x,y,run_over=True):
         overlaps = list(self.canvas.find_overlapping(self.coords[0], self.coords[1], x,y))
+
         crash = False
+        overlap = False
         for i in overlaps:
+            # print(self.canvas.itemconfig(i)["tags"][-1])
             if self.canvas.itemconfig(i)["tags"][-1] == "obstacle" or self.canvas.itemconfig(i)["tags"][-1] == "obstacle current":
                 crash = True
+        if len(overlaps)>3 and not run_over:
+            overlap = True
+        # print("...")     
 
-        buffer = 2
-        if not crash and (buffer < x < self.canvas.winfo_width()-buffer) and (buffer < y < self.canvas.winfo_height()-buffer):
+        buffer = 5
+        if not overlap and not crash and (buffer < x < self.canvas.winfo_width()-buffer) and (buffer < y < self.canvas.winfo_height()-buffer):
             if self.pen:
                 self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=1, tag="line")
             self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
             self.coords = np.array([x,y])
+            return True
+        else: return False
 
+    def pen_on_off(self):
+        self.pen = not self.pen
+
+    def pick_colour(self):
+        self.colour = colorchooser.askcolor(title="Pick a colour!")[1] # [1] is the hex colour
+    
     def reset(self):
         #slightly off centre but not a big issue
         self.coords=np.array([self.canvas.winfo_width()/2, self.canvas.winfo_height()/2])
@@ -76,7 +92,7 @@ class Turtle:
             self.obs_flag = True
         else:
             if self.turtle_flag:
-                tmp_pen = self.pen
+                tmp_pen = self.pen #keep current pen state for when finished
                 self.pen = False
                 self.move_to(xnew,ynew)
                 self.pen = tmp_pen
@@ -135,7 +151,6 @@ class Turtle:
         self.pen = True
 
     def move_circle(self,r):
-        
         self.pen = False
         centre = self.coords
         for i in range(10):
@@ -143,7 +158,7 @@ class Turtle:
             self.canvas.update()
         self.rotate(-90)
         self.pen = True
-        for i in range(360):
+        for i in range(361):
             x = centre[0]+r*math.sin(-i * math.pi/180+math.pi)
             y = centre[1]+r*math.cos(-i * math.pi/180+math.pi)
             self.move_to(x,y)
@@ -153,16 +168,69 @@ class Turtle:
                 #Small rotations mess up turtle image
                 self.rotate(-90)
         self.pen = False
-        self.rotate(-90)
         for i in range(10):
             self.move("Down",r/10)
             self.canvas.update()
         self.rotate(180)
         self.pen = True
         
+    def free_space_spiral(self):
+        while self.move("Up",run_over=False):
+            self.canvas.update()
+        while self.move("Right",run_over=False):
+            self.canvas.update()
+        while self.move("Down",run_over=False):
+            self.canvas.update()
+        while self.move("Left",run_over=False):
+            self.canvas.update()
+        while self.move("Up",run_over=False):
+            self.canvas.update()
     
-    def pen_on_off(self):
-        self.pen = not self.pen
+    def stuck_spiral(self, dist):
+        self.move("Right",dist)
+        self.canvas.update()
+        self.free_space_spiral()
+        self.move("Down",dist)
+        self.canvas.update()
+        self.free_space_spiral()
+        self.move("Left",dist)
+        self.canvas.update()
+        self.free_space_spiral()
+        self.move("Up",dist)
+        self.canvas.update()
+        self.free_space_spiral()
 
-    def pick_colour(self):
-        self.colour = colorchooser.askcolor(title="Pick a colour!")[1] # [1] is the hex colour
+    def move_spiral(self):
+        centre = self.coords
+        x = centre[0]
+        y = centre[1]
+        j = 1
+        crashed = False
+        while not crashed:
+            for i in range(360*(j-1),360*j):
+                r = 1*i*math.pi/180
+                x = centre[0]+r*math.sin(-i * math.pi/180+math.pi)
+                y = centre[1]+r*math.cos(-i * math.pi/180+math.pi)
+                if not self.move_to(x,y,run_over=False): 
+                    crashed=True 
+                    break
+                if i%10==0:
+                    self.canvas.update()
+            j+=1
+            
+
+    def hoover_mode(self):
+        for i in range(1000):
+            self.move_spiral()
+            new_coords = np.array([random.randint(0,300),random.randint(0,300)])
+            # new_coords = self.coords+np.array([random.randint(-100,100),random.randint(-100,100)])
+            self.move_to(new_coords[0],new_coords[1])
+        
+        # for i in range(30):
+        #     self.stuck_spiral(i*10)
+        #     self.canvas.update()
+            
+
+        
+            
+            

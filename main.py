@@ -22,6 +22,8 @@ def keypress_manager(event):
         turtle.move_square(100)
     elif event.keysym == "c":
         turtle.move_circle(50)
+    elif event.keysym == "h":
+        turtle.hoover_mode()
     elif event.keysym == "r":
         turtle.reset()
     elif event.keysym =="Escape":

@@ -14,6 +14,8 @@ C: Draw Circle
 
 M: Draw Square
 
+H: Hoover Mode
+
 Escape: Exit window
 
 
