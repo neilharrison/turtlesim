@@ -18,6 +18,10 @@ def keypress_manager(event):
         turtle.rotate(90)
     elif event.keysym == "space":
         turtle.pen_on_off()
+    elif event.keysym == "m":
+        turtle.move_square(50)
+    elif event.keysym == "c":
+        turtle.move_circle(50)
     elif event.keysym == "r":
         turtle.reset()
     elif event.keysym =="Escape":

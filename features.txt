@@ -1,6 +1,5 @@
     TO DO:
     Eraser
-    Shape drawing
     Smiley face
     Drag to new start point?
     Hoover mode
@@ -19,4 +18,5 @@
     Edge detection
     Obstacle avoidance
     delete obstacles
-     Go to point
+    Go to point
+    Shape drawing

@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import colorchooser
 from PIL import Image, ImageTk
 import numpy as np
+import math
 
 class Turtle:
     
@@ -22,7 +23,7 @@ class Turtle:
     
     def load_sprite_canvas(self):
         self.loadTurtle = ImageTk.PhotoImage(self.resizeimage)
-        self.turtle_sprite = self.canvas.create_image(self.coords[0]-15,self.coords[1]-self.resizeimage.size[1]/2,anchor=tk.NW, image=self.loadTurtle,tag="turtle")
+        self.turtle_sprite = self.canvas.create_image(self.coords[0],self.coords[1],anchor=tk.CENTER, image=self.loadTurtle,tag="turtle")
     
     def rotate(self,angle):
         self.canvas.delete(self.turtle_sprite)
@@ -74,10 +75,10 @@ class Turtle:
             self.obs_flag = True
         else:
             if self.turtle_flag:
-                tmp = self.pen
+                tmp_pen = self.pen
                 self.pen = False
                 self.move_to(xnew,ynew)
-                self.pen = tmp
+                self.pen = tmp_pen
                 self.turtle_flag = False
             else:
                 self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
@@ -93,6 +94,57 @@ class Turtle:
     def square_obstacle(self,x1,y1,x2,y2):
         self.canvas.create_rectangle(x1,y1,x2,y2,fill="black",tag="obstacle")
 
+    
+    def move_square(self,d):
+        self.pen = False
+        # Ugly but otherwise move is too quick, 
+        # without update() - no display update until func finished
+        for i in range(10):
+            self.move("Up",d/20)
+            self.canvas.update()
+        self.pen = True
+        for i in range(10):
+            self.move("Right",d/20)
+            self.canvas.update()
+        for i in range(10):
+            self.move("Down",d/10)
+            self.canvas.update()
+        for i in range(10):
+            self.move("Left",d/10)
+            self.canvas.update()
+        for i in range(10):
+            self.move("Up",d/10)
+            self.canvas.update()
+        for i in range(10):
+            self.move("Right",d/20)
+            self.canvas.update()
+        self.pen = False
+        for i in range(10):
+            self.move("Down",d/20)
+            self.canvas.update()
+        self.pen = True
+
+    def move_circle(self,r):
+        
+        self.pen = False
+        centre = self.coords
+        for i in range(10):
+            self.move("Up",r/10)
+            self.canvas.update()
+        self.pen = True
+        for i in range(360):
+            x = centre[0]+r*math.sin(i * math.pi/180+math.pi)
+            y = centre[1]+r*math.cos(i * math.pi/180+math.pi)
+            self.move_to(x,y)
+            if i%4==0:
+                self.canvas.update()
+        self.pen = False
+        for i in range(10):
+            self.move("Down",r/10)
+            self.canvas.update()
+        self.pen = True
+        
+    
     def pen_on_off(self):
         self.pen = not self.pen
 
