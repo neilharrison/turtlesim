@@ -82,29 +82,30 @@ class Turtle:
         #self.load_sprite_canvas() loaded again in rotate
 
     def obstacle_mouse(self,xnew,ynew):
-        # Check if first or second click
-        if not self.obs_flag:
-            if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  #clicked on turtle?
-                self.turtle_flag = True
-            else:
-                # Clicked outside canvas? usually when resizing window
-                if self.within_range([xnew,ynew], [0,0],[self.canvas.winfo_width()-10, self.canvas.winfo_height()-10]): 
+        # Clicked outside canvas? usually when resizing window
+        if self.within_range([xnew,ynew], [0,0],[self.canvas.winfo_width()-10, self.canvas.winfo_height()-20]): 
+            # Check if first or second click
+            if not self.obs_flag:
+                if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  #clicked on turtle?
+                    self.turtle_flag = True
+                    print("turtle clicked")
+                else:
                     self.indicator = self.canvas.create_oval(self.canvas.winfo_width()-20,20,self.canvas.winfo_width()-10,10,fill="black")
                     self.obstacle_coords = [xnew,ynew]
-                    self.obs_flag = True
-        else: # Second click
-            if self.turtle_flag:
-                tmp_pen = self.pen # keep current pen state for when finished
-                self.pen = False
-                self.move_to(xnew,ynew)
-                self.pen = tmp_pen
-                self.turtle_flag = False
-            else:
-                # Check if new obstacle will enclose turtle
-                if not(self.within_range(self.coords,self.obstacle_coords,[xnew,ynew])): 
-                    self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
-                self.canvas.delete(self.indicator)
-            self.obs_flag = False
+                self.obs_flag = True
+            else: # Second click
+                if self.turtle_flag:
+                    tmp_pen = self.pen # keep current pen state for when finished
+                    self.pen = False
+                    self.move_to(xnew,ynew)
+                    self.pen = tmp_pen
+                    self.turtle_flag = False
+                else:
+                    # Check if new obstacle will enclose turtle
+                    if not(self.within_range(self.coords,self.obstacle_coords,[xnew,ynew])): 
+                        self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
+                    self.canvas.delete(self.indicator)
+                self.obs_flag = False
     
     def within_range(self,check,val1,val2):
         return (val1[0]<=check[0]<=val2[0] or val2[0]<=check[0]<=val1[0]) and  (val1[1]<=check[1]<=val2[1] or val2[1]<=check[1]<=val1[1])
@@ -227,15 +228,15 @@ class Turtle:
             
 
     def hoover_mode(self):
-        for i in range(1000):
-            self.move_spiral()
-            new_coords = np.array([random.randint(0,300),random.randint(0,300)])
-            # new_coords = self.coords+np.array([random.randint(-100,100),random.randint(-100,100)])
-            self.move_to(new_coords[0],new_coords[1])
+        # for i in range(1000):
+        #     self.move_spiral()
+        #     new_coords = np.array([random.randint(0,300),random.randint(0,300)])
+        #     # new_coords = self.coords+np.array([random.randint(-100,100),random.randint(-100,100)])
+        #     self.move_to(new_coords[0],new_coords[1])
         
-        # for i in range(30):
-        #     self.stuck_spiral(i*10)
-        #     self.canvas.update()
+        for i in range(30):
+            self.stuck_spiral(i*10)
+            self.canvas.update()
             
 
         
