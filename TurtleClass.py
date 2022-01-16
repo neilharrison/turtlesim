@@ -82,7 +82,6 @@ class Turtle:
         #self.load_sprite_canvas() loaded again in rotate
 
     def obstacle_mouse(self,xnew,ynew):
-        #Todo - make sure obstacle doesnt contain turtle
         if not self.obs_flag:
             if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  
                 self.turtle_flag = True
@@ -98,10 +97,14 @@ class Turtle:
                 self.pen = tmp_pen
                 self.turtle_flag = False
             else:
-                self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
+                if  not(self.within_range(self.coords,self.obstacle_coords,[xnew,ynew])): 
+                    self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
                 self.canvas.delete(self.indicator)
             self.obs_flag = False
     
+    def within_range(self,check,val1,val2):
+        return (val1[0]<=check[0]<=val2[0] or val2[0]<=check[0]<=val1[0]) and  (val1[1]<=check[1]<=val2[1] or val2[1]<=check[1]<=val1[1])
+
     def obstacle_remove(self,x,y):
         item = self.canvas.find_closest(x,y)
         if self.canvas.itemconfig(item)["tags"][-1] == "obstacle" or self.canvas.itemconfig(item)["tags"][-1] == "obstacle current":
