@@ -36,6 +36,7 @@ def keypress_manager(event):
 
 def mouse_obs(event):
     turtle.obstacle_mouse(event.x,event.y)
+    print([event.x,event.y])
 def obs_remove(event):
     turtle.obstacle_remove(event.x,event.y)
 

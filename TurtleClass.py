@@ -46,7 +46,7 @@ class Turtle:
         coord_change = coord_change*dist
         return self.move_to(self.coords[0]+coord_change[0],self.coords[1]+coord_change[1],run_over)
 
-    def move_to(self,x,y,run_over=True):
+    def move_to(self,x,y,run_over=True):   
         overlaps = list(self.canvas.find_overlapping(self.coords[0], self.coords[1], x,y))
 
         crash = False
@@ -65,9 +65,22 @@ class Turtle:
                 self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=1, tag="line")
             self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
             self.coords = np.array([x,y])
+            self.canvas.update()
             return True
         else: return False
 
+    def move_inc(self,x,y,run_over=True):
+        num_incs = math.ceil(np.linalg.norm(np.array([x,y])-self.coords)/10)+1
+        incs = np.linspace(self.coords,np.array([x,y]),num_incs)[1:]
+        success = True
+        for inc in incs:
+            if self.move_to(inc[0],inc[1]):
+                success = True 
+            else: 
+                success = False
+                break
+        return success
+        
     def pen_on_off(self):
         self.pen = not self.pen
 
@@ -83,7 +96,7 @@ class Turtle:
 
     def obstacle_mouse(self,xnew,ynew):
         # Clicked outside canvas? usually when resizing window
-        if self.within_range([xnew,ynew], [0,0],[self.canvas.winfo_width()-10, self.canvas.winfo_height()-20]): 
+        if self.within_range([xnew,ynew], [0,0],[self.canvas.winfo_width()-5, self.canvas.winfo_height()-20]): 
             # Check if first or second click
             if not self.obs_flag:
                 if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  #clicked on turtle?
@@ -124,37 +137,29 @@ class Turtle:
     def move_square(self,d):
         self.pen = False
         # Ugly but otherwise move is too quick, 
-        # without update() - no display update until func finished
         self.rotate(-self.angle)
         for i in range(10):
             self.move("Up",d/20)
-            self.canvas.update()
         self.rotate(-90)
         self.pen = True
         for i in range(10):
             self.move("Right",d/20)    
-            self.canvas.update()
         self.rotate(-90)
         for i in range(10):
             self.move("Down",d/10)
-            self.canvas.update()
         self.rotate(-90)
         for i in range(10):
             self.move("Left",d/10)
-            self.canvas.update()
         self.rotate(-90)
         for i in range(10):
             self.move("Up",d/10)
-            self.canvas.update()
         self.rotate(-90)
         for i in range(10):
             self.move("Right",d/20)
-            self.canvas.update()
         self.rotate(-90)
         self.pen = False
         for i in range(10):
             self.move("Down",d/20)
-            self.canvas.update()
         self.rotate(180)
         self.pen = True
 
@@ -163,22 +168,21 @@ class Turtle:
         centre = self.coords
         for i in range(10):
             self.move("Up",r/10)
-            self.canvas.update()
+            
         self.rotate(-90)
         self.pen = True
         for i in range(361):
             x = centre[0]+r*math.sin(-i * math.pi/180+math.pi)
             y = centre[1]+r*math.cos(-i * math.pi/180+math.pi)
             self.move_to(x,y)
-            if i%4==0:
-                self.canvas.update()
+            # if i%4==0:
+            #     self.canvas.update()
             if i%90==0:
                 #Small rotations mess up turtle image
                 self.rotate(-90)
         self.pen = False
         for i in range(10):
             self.move("Down",r/10)
-            self.canvas.update()
         self.rotate(180)
         self.pen = True
         
@@ -233,11 +237,35 @@ class Turtle:
         #     new_coords = np.array([random.randint(0,300),random.randint(0,300)])
         #     # new_coords = self.coords+np.array([random.randint(-100,100),random.randint(-100,100)])
         #     self.move_to(new_coords[0],new_coords[1])
+        occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=bool)
+        #occupancy maps workspace into grid of 10 pixels
+        #index [0,0] => ([idx]+1)*10 => pixel (10,10)
+        # while not occupancy.all():
+        #do forward and backward pass in one go
+        for i in range(0,occupancy.shape[0]-1,2): 
+            for j in range(0,occupancy.shape[1]):
+                if not occupancy[i][j]:
+                    if self.move_inc((j+1)*10,(i+1)*10):
+                        occupancy[i][j] = True
+                    else: self.circle_obstacle(occupancy)
+            for j in reversed(range(0,occupancy.shape[1])):
+                if not occupancy[i+1][j]:
+                    if self.move_inc((j+1)*10,(i+2)*10):
+                        occupancy[i+1][j] = True
+        if not occupancy.shape[0]%2==0:
+            #do remaining row if odd row number
+            for j in range(0,occupancy.shape[1]):
+                if not occupancy[-1][j]:
+                    if self.move_inc((j+1)*10,(occupancy.shape[0])*10):
+                        occupancy[-1][j] = True
         
-        for i in range(30):
-            self.stuck_spiral(i*10)
-            self.canvas.update()
-            
+        # print("Done")
+        # for i in range(30):
+        #     self.stuck_spiral(i*10)
+        #     self.canvas.update()
+    
+    def circle_obstacle(self,occupancy):
+        pass
 
         
             
