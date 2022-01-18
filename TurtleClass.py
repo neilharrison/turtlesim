@@ -11,6 +11,7 @@ class Turtle:
         self.canvas = canvas
         self.coords = np.array([150, 150])
         self.load_sprite_file()
+        self.load_indicator_file()
         self.load_sprite_canvas()
         self.pen = True
         self.colour = '#000000'
@@ -19,6 +20,11 @@ class Turtle:
         self.turtle_flag = False
         self.eraser_flag = False
         self.colour_old = "black"
+        self.fill_flag = False
+        self.fill_list = []
+        self.fill_colour = "black"
+        self.last_fill = None
+        
 
     def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
@@ -29,6 +35,11 @@ class Turtle:
         self.loadTurtle = ImageTk.PhotoImage(self.rotatedimage)
         self.turtle_sprite = self.canvas.create_image(self.coords[0],self.coords[1],anchor=tk.CENTER, image=self.loadTurtle,tag="turtle")
         self.canvas.update()
+    
+    def load_indicator_file(self):
+        image = Image.open("squarepointer.png")
+        image = image.resize((25,int(25*image.size[0]/image.size[1])),resample=Image.BICUBIC)
+        self.obs_image = ImageTk.PhotoImage(image)
 
     def rotate(self,rel_angle):
         self.canvas.delete(self.turtle_sprite)
@@ -55,10 +66,16 @@ class Turtle:
 
         crash = False
         overlap = False
+        in_fill = False
         for i in overlaps:
-            # print(self.canvas.itemconfig(i)["tags"][-1])
             if self.canvas.itemconfig(i)["tags"][-1] == "obstacle" or self.canvas.itemconfig(i)["tags"][-1] == "obstacle current":
                 crash = True
+            if self.canvas.itemconfig(i)["tags"][-1] == "fill":
+                in_fill = True
+        if not in_fill and self.last_fill:
+            self.canvas.itemconfig(self.last_fill, tag="obstacle")
+            self.last_fill = None
+
         if len(overlaps)>3 and not run_over:
             overlap = True
         # print("...")     
@@ -70,6 +87,8 @@ class Turtle:
             self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
             self.coords = np.array([x,y])
             self.canvas.update()
+            if self.fill_flag:
+                self.fill_list.append([self.coords[0],self.coords[1]])
             return True
         else: return False
 
@@ -105,6 +124,8 @@ class Turtle:
         self.coords=np.array([self.canvas.winfo_width()/2, self.canvas.winfo_height()/2])
         self.canvas.delete("all")
         self.rotate(-self.angle)
+        self.eraser_flag = False
+        self.colour = "black"
         #self.load_sprite_canvas() loaded again in rotate
 
     def obstacle_mouse(self,xnew,ynew):
@@ -114,9 +135,8 @@ class Turtle:
             if not self.obs_flag:
                 if abs(self.coords[0]-xnew)<20 and abs(self.coords[1]-ynew)<20:  #clicked on turtle?
                     self.turtle_flag = True
-                    print("turtle clicked")
                 else:
-                    self.indicator = self.canvas.create_oval(self.canvas.winfo_width()-20,20,self.canvas.winfo_width()-10,10,fill="black")
+                    self.obs_indicator = self.canvas.create_image(self.canvas.winfo_width()-20,20,anchor=tk.CENTER, image=self.obs_image)
                     self.obstacle_coords = [xnew,ynew]
                 self.obs_flag = True
             else: # Second click
@@ -130,7 +150,7 @@ class Turtle:
                     # Check if new obstacle will enclose turtle
                     if not(self.within_range(self.coords,self.obstacle_coords,[xnew,ynew])): 
                         self.square_obstacle(self.obstacle_coords[0],self.obstacle_coords[1],xnew,ynew)
-                    self.canvas.delete(self.indicator)
+                    self.canvas.delete(self.obs_indicator)
                 self.obs_flag = False
     
     def within_range(self,check,val1,val2):
@@ -141,12 +161,24 @@ class Turtle:
         if self.canvas.itemconfig(item)["tags"][-1] == "obstacle" or self.canvas.itemconfig(item)["tags"][-1] == "obstacle current":
             self.canvas.delete(item)
         self.obs_flag = False
-        self.canvas.delete(self.indicator)
-
+        self.canvas.delete(self.obs_indicator)
 
     def square_obstacle(self,x1,y1,x2,y2):
         self.canvas.create_rectangle(x1,y1,x2,y2,fill="black",tag="obstacle")
 
+    def fill(self):
+        if self.fill_flag:
+            self.fill_flag = False
+            if self.fill_list != []:
+                self.do_filling()
+            self.fill_list = []
+            self.canvas.delete(self.fill_indicator)
+        else:
+            self.fill_flag = True
+            self.fill_indicator = self.canvas.create_oval(self.canvas.winfo_width()-50,24,self.canvas.winfo_width()-40,14,fill="black")
+            
+    def do_filling(self):
+        self.last_fill = self.canvas.create_polygon(self.fill_list,fill=self.fill_colour, tag="fill")
     
     def move_square(self,d):
         self.pen = False
@@ -182,18 +214,14 @@ class Turtle:
         centre = self.coords
         for i in range(10):
             self.move("Up",r/10)
-            
-        self.rotate(-90)
+        self.rotate(-self.angle-90)
         self.pen = True
         for i in range(361):
             x = centre[0]+r*math.sin(-i * math.pi/180+math.pi)
             y = centre[1]+r*math.cos(-i * math.pi/180+math.pi)
             self.move_to(x,y)
-            # if i%4==0:
-            #     self.canvas.update()
-            if i%90==0:
-                #Small rotations mess up turtle image
-                self.rotate(-90)
+            self.rotate(-1)
+        self.rotate(-90)
         self.pen = False
         for i in range(10):
             self.move("Down",r/10)

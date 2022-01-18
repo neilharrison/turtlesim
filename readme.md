@@ -14,6 +14,8 @@ C: Draw Circle
 
 M: Draw Square
 
+F: Fill Shape - press before and after drawing shape
+
 H: Hoover Mode
 
 Escape: Exit window

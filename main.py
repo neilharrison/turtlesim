@@ -29,6 +29,8 @@ def keypress_manager(event):
         turtle.move_circle(50)
     elif event.keysym == "h":
         turtle.hoover_mode()
+    elif event.keysym == "f":
+        turtle.fill()
     elif event.keysym == "x":
         turtle.eraser()
     elif event.keysym == "r":
