@@ -37,6 +37,8 @@ def keypress_manager(event):
         turtle.reset()
     elif event.keysym =="Escape":
         window.destroy()
+    elif event.keysym =="g":
+        turtle.save_canvas(window.winfo_rootx(),window.winfo_rooty())
 
 def mouse_obs(event):
     turtle.obstacle_mouse(event.x,event.y)

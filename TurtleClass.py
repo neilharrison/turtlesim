@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import colorchooser
 from PIL import Image, ImageTk
+import pyscreenshot
 import numpy as np
 import math
 import random
@@ -40,6 +41,11 @@ class Turtle:
         image = Image.open("squarepointer.png")
         image = image.resize((25,int(25*image.size[0]/image.size[1])),resample=Image.BICUBIC)
         self.obs_image = ImageTk.PhotoImage(image)
+    
+    def save_canvas(self,x,y):
+        x1 = x + self.canvas.winfo_width()
+        y1 = y + self.canvas.winfo_height()
+        pyscreenshot.grab((x,y,x1,y1)).save("output.png")
 
     def rotate(self,rel_angle):
         self.canvas.delete(self.turtle_sprite)
