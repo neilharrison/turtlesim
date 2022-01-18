@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import colorchooser
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 import pyscreenshot
 import numpy as np
 import math
@@ -30,7 +30,7 @@ class Turtle:
     def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
         self.unrotatedimage = image.resize((30,int(30*image.size[0]/image.size[1])))
-        self.rotatedimage = self.unrotatedimage  
+        self.rotatedimage = self.unrotatedimage
     
     def load_sprite_canvas(self):
         self.loadTurtle = ImageTk.PhotoImage(self.rotatedimage)
@@ -52,6 +52,8 @@ class Turtle:
         self.angle+=rel_angle
         self.angle = self.angle%360
         self.rotatedimage = self.unrotatedimage.rotate(self.angle)
+        #if pen is off - make turtle grayscale
+        if not self.pen: self.rotatedimage = self.rotatedimage.convert('LA').convert('RGBA')
         self.load_sprite_canvas()
 
     def move(self, dir, dist=10,run_over=True):
@@ -112,6 +114,12 @@ class Turtle:
         
     def pen_on_off(self):
         self.pen = not self.pen
+        if not self.pen:
+            self.canvas.delete(self.turtle_sprite)
+            self.rotatedimage = self.rotatedimage.convert('LA').convert('RGBA')
+            self.load_sprite_canvas()
+        else:
+            self.rotate(self.angle)
 
     def pick_colour(self):
         self.colour = colorchooser.askcolor(title="Pick a colour!")[1] # [1] is the hex colour

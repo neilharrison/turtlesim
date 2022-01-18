@@ -3,7 +3,6 @@
     Drag to new start point?
     
     Undo/redo
-    Change turtle state while pen off
     Line width
     Background colour
     Allow user to change turtle
@@ -26,3 +25,4 @@
     Eraser
     Filling in shapes
     Save
+    Change turtle state while pen off
