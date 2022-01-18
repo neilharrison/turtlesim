@@ -29,6 +29,8 @@ def keypress_manager(event):
         turtle.move_circle(50)
     elif event.keysym == "h":
         turtle.hoover_mode()
+    elif event.keysym == "x":
+        turtle.eraser()
     elif event.keysym == "r":
         turtle.reset()
     elif event.keysym =="Escape":
@@ -36,7 +38,6 @@ def keypress_manager(event):
 
 def mouse_obs(event):
     turtle.obstacle_mouse(event.x,event.y)
-    print([event.x,event.y])
 def obs_remove(event):
     turtle.obstacle_remove(event.x,event.y)
 
@@ -51,7 +52,7 @@ tk.Button(window, text="pen", command=turtle.pen_on_off).grid(column=0, row=2)
 tk.Button(window, text="colour", command=turtle.pick_colour).grid(column=3, row=2)
 
 window.bind('<Key>',keypress_manager)
-window.bind('<Button-1>', mouse_obs)
-window.bind('<Double-Button-1>',obs_remove)
+canvas.bind('<Button-1>', mouse_obs)
+canvas.bind('<Double-Button-1>',obs_remove)
 
 window.mainloop()

@@ -17,6 +17,8 @@ class Turtle:
         self.angle = 0
         self.obs_flag = False
         self.turtle_flag = False
+        self.eraser_flag = False
+        self.colour_old = "black"
 
     def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
@@ -25,7 +27,8 @@ class Turtle:
     def load_sprite_canvas(self):
         self.loadTurtle = ImageTk.PhotoImage(self.resizeimage)
         self.turtle_sprite = self.canvas.create_image(self.coords[0],self.coords[1],anchor=tk.CENTER, image=self.loadTurtle,tag="turtle")
-    
+        self.canvas.update()
+        
     def rotate(self,angle):
         self.canvas.delete(self.turtle_sprite)
         self.resizeimage = self.resizeimage.rotate(angle)
@@ -86,6 +89,15 @@ class Turtle:
 
     def pick_colour(self):
         self.colour = colorchooser.askcolor(title="Pick a colour!")[1] # [1] is the hex colour
+
+    def eraser(self):
+        if self.eraser_flag:
+            self.colour = self.colour_old
+            self.eraser_flag = not self.eraser_flag
+        else:
+            self.colour_old = self.colour
+            self.colour = self.canvas["background"]
+            self.eraser_flag = not self.eraser_flag
     
     def reset(self):
         #slightly off centre but not a big issue
@@ -128,6 +140,7 @@ class Turtle:
         if self.canvas.itemconfig(item)["tags"][-1] == "obstacle" or self.canvas.itemconfig(item)["tags"][-1] == "obstacle current":
             self.canvas.delete(item)
         self.obs_flag = False
+        self.canvas.delete(self.indicator)
 
 
     def square_obstacle(self,x1,y1,x2,y2):
