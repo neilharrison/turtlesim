@@ -1,11 +1,11 @@
     TO DO:
     Smiley face
     Drag to new start point?
-    
     Undo/redo
     Line width
     Background colour
     Allow user to change turtle
+    spirograph mode
     
     
     DONE:
