@@ -22,18 +22,19 @@ class Turtle:
 
     def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
-        self.resizeimage = image.resize((30,int(30*image.size[0]/image.size[1])))
+        self.unrotatedimage = image.resize((30,int(30*image.size[0]/image.size[1])))
+        self.rotatedimage = self.unrotatedimage  
     
     def load_sprite_canvas(self):
-        self.loadTurtle = ImageTk.PhotoImage(self.resizeimage)
+        self.loadTurtle = ImageTk.PhotoImage(self.rotatedimage)
         self.turtle_sprite = self.canvas.create_image(self.coords[0],self.coords[1],anchor=tk.CENTER, image=self.loadTurtle,tag="turtle")
         self.canvas.update()
-        
-    def rotate(self,angle):
+
+    def rotate(self,rel_angle):
         self.canvas.delete(self.turtle_sprite)
-        self.resizeimage = self.resizeimage.rotate(angle)
-        self.angle+=angle
+        self.angle+=rel_angle
         self.angle = self.angle%360
+        self.rotatedimage = self.unrotatedimage.rotate(self.angle)
         self.load_sprite_canvas()
 
     def move(self, dir, dist=10,run_over=True):

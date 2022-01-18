@@ -1,5 +1,4 @@
     TO DO:
-    Eraser
     Smiley face
     Drag to new start point?
     Filling in shapes
@@ -20,3 +19,4 @@
     Shape drawing
     Resizing window
     Hoover mode (Kind of)
+    Eraser
