@@ -5,6 +5,7 @@ window = tk.Tk()
 window.title("Turtle Sim")
 
 canvas = tk.Canvas(window, bg="white", height=300, width=300)
+#configure resizing 
 window.rowconfigure(0,weight=1)
 window.columnconfigure(0,weight=1)
 window.columnconfigure(1,weight=1)
@@ -29,6 +30,8 @@ def keypress_manager(event):
         turtle.move_circle(50)
     elif event.keysym == "h":
         turtle.hoover_mode()
+    elif event.keysym == "p":
+        turtle.spirograph_mode()
     elif event.keysym == "f":
         turtle.fill()
     elif event.keysym == "x":

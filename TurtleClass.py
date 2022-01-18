@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import colorchooser
-from PIL import Image, ImageTk, ImageOps
+from PIL import Image, ImageTk
 import pyscreenshot
 import numpy as np
 import math
@@ -241,6 +241,22 @@ class Turtle:
             self.move("Down",r/10)
         self.rotate(180)
         self.pen = True
+
+
+    def spirograph_mode(self):
+        centre = self.coords
+        k = random.random()
+        l = random.random()
+        if self.pen: self.pen_on_off()
+        for i in range(361):
+            x = centre[0]+100*((1-k)*math.cos(i)+l*k*math.cos(i*(1-k)/k))
+            y = centre[1]+100*((1-k)*math.sin(i)-l*k*math.sin(i*(1-k)/k))
+            if i == 1: self.pen_on_off()
+            self.move_to(x,y)
+        self.pen_on_off()
+        self.move_to(centre[0],centre[1])
+        self.pen_on_off()
+        
         
     def free_space_spiral(self):
         while self.move("Up",run_over=False):

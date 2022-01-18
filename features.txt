@@ -5,7 +5,6 @@
     Line width
     Background colour
     Allow user to change turtle
-    spirograph mode
     
     
     DONE:
@@ -26,3 +25,4 @@
     Filling in shapes
     Save
     Change turtle state while pen off
+    spirograph mode
