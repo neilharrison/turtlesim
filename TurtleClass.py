@@ -15,7 +15,7 @@ class Turtle:
         self.load_sprite_file()
         self.load_indicator_file()
         self.load_sprite_canvas()
-        self.pen = True
+        self.pen_flag = True
         self.colour = '#000000'
         self.background_colour = '#FFFFFF'
         self.line_width = 1
@@ -57,7 +57,7 @@ class Turtle:
         self.angle = self.angle%360
         self.rotatedimage = self.unrotatedimage.rotate(self.angle)
         #if pen is off - make turtle grayscale
-        if not self.pen: self.rotatedimage = self.rotatedimage.convert('LA').convert('RGBA')
+        if not self.pen_flag: self.rotatedimage = self.rotatedimage.convert('LA').convert('RGBA')
         self.load_sprite_canvas()
 
     def move(self, dir, dist=10,run_over=True):
@@ -94,7 +94,7 @@ class Turtle:
 
         buffer = 5
         if not overlap and not crash and (buffer < x < self.canvas.winfo_width()-buffer) and (buffer < y < self.canvas.winfo_height()-buffer):
-            if self.pen:
+            if self.pen_flag:
                 self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=self.line_width, tag="line")
             self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
             self.coords = np.array([x,y])
@@ -117,13 +117,15 @@ class Turtle:
         return success
         
     def pen_on_off(self):
-        self.pen = not self.pen
-        if not self.pen:
+        if  self.pen_flag: #pen off 
             self.canvas.delete(self.turtle_sprite)
             self.rotatedimage = self.rotatedimage.convert('LA').convert('RGBA')
             self.load_sprite_canvas()
+            self.pen_flag = not self.pen_flag
         else:
-            self.rotate(self.angle)
+            self.pen_flag = not self.pen_flag
+            self.rotate(0)
+        
 
     def pick_colour(self):
         self.colour = colorchooser.askcolor(title="Pick a colour!")[1] # [1] is the hex colour
@@ -140,12 +142,11 @@ class Turtle:
         if self.eraser_flag: #Finished erasing
             self.colour = self.colour_old
             self.line_width = 1
-            self.eraser_flag = not self.eraser_flag
         else: #Started erasing
             self.colour_old = self.colour
             self.line_width = 5
             self.colour = self.canvas["background"]
-            self.eraser_flag = not self.eraser_flag
+        self.eraser_flag = not self.eraser_flag   
     
     def reset(self):
         #slightly off centre but not a big issue
@@ -158,7 +159,6 @@ class Turtle:
         self.background_colour = '#FFFFFF'
         self.canvas.configure(bg=self.background_colour)
         self.line_width = 1
-       
         #self.load_sprite_canvas() loaded again in rotate
 
     def obstacle_mouse(self,xnew,ynew):
@@ -212,13 +212,13 @@ class Turtle:
         self.last_fill = self.canvas.create_polygon(self.fill_list,fill=self.fill_colour, tag="fill")
     
     def move_square(self,d):
-        self.pen = False
+        if self.pen_flag: self.pen_on_off()
         # Ugly but otherwise move is too quick, 
         self.rotate(-self.angle)
         for i in range(10):
             self.move("Up",d/20)
         self.rotate(-90)
-        self.pen = True
+        self.pen_on_off()
         for i in range(10):
             self.move("Right",d/20)    
         self.rotate(-90)
@@ -234,38 +234,39 @@ class Turtle:
         for i in range(10):
             self.move("Right",d/20)
         self.rotate(-90)
-        self.pen = False
+        self.pen_on_off()
         for i in range(10):
             self.move("Down",d/20)
         self.rotate(180)
-        self.pen = True
+        self.pen_on_off()
 
     def move_circle(self,r):
-        self.pen = False
+        if self.pen_flag: self.pen_on_off()
         centre = self.coords
         for i in range(10):
             self.move("Up",r/10)
         self.rotate(-self.angle-90)
-        self.pen = True
+        self.pen_on_off()
         for i in range(361):
             x = centre[0]+r*math.sin(-i * math.pi/180+math.pi)
             y = centre[1]+r*math.cos(-i * math.pi/180+math.pi)
             self.move_to(x,y)
             self.rotate(-1)
         self.rotate(-90)
-        self.pen = False
+        self.pen_on_off()
         for i in range(10):
             self.move("Down",r/10)
         self.rotate(180)
-        self.pen = True
+        self.pen_on_off()
 
 
     def spirograph_mode(self):
         centre = self.coords
         k = random.random()
         l = random.random()
-        if self.pen: self.pen_on_off()
+        if self.pen_flag: self.pen_on_off()
         for i in range(150):
+            #Wikipedia to thank for the formula
             x = centre[0]+100*((1-k)*math.cos(i)+l*k*math.cos(i*(1-k)/k))
             y = centre[1]+100*((1-k)*math.sin(i)-l*k*math.sin(i*(1-k)/k))
             if i == 1: self.pen_on_off()
