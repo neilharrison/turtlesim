@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import colorchooser, simpledialog
+from tkinter import colorchooser, simpledialog, filedialog
 from PIL import Image, ImageTk
 import pyscreenshot
 import numpy as np
@@ -29,11 +29,15 @@ class Turtle:
         self.fill_colour = "black"
         self.last_fill = None
         self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
-        
+
+    def ask_sprite_file(self):
+        filename = filedialog.askopenfilename()
+        self.load_sprite_file(filename)
+        self.load_sprite_canvas() 
 
     def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
-        self.unrotatedimage = image.resize((30,int(30*image.size[0]/image.size[1])))
+        self.unrotatedimage = image.resize((30,int(30*image.size[1]/image.size[0])))
         self.rotatedimage = self.unrotatedimage
     
     def load_sprite_canvas(self):

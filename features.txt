@@ -1,6 +1,6 @@
     TO DO:
     Undo/redo
-    Allow user to change turtle
+    
     
     
     DONE:
@@ -24,3 +24,4 @@
     spirograph mode
     Line width
     Background colour
+    Allow user to change turtle

@@ -26,6 +26,8 @@ H: Hoover Mode
 
 G: Save image
 
+T: Change turtle sprite - choose a file
+
 Escape: Exit window
 
 
