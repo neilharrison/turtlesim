@@ -16,6 +16,10 @@ M: Draw Square
 
 F: Fill Shape - press before and after drawing shape
 
+L: Line Width
+
+B: Background Colour
+
 P: Spirograph Mode!
 
 H: Hoover Mode

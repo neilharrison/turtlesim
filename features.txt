@@ -1,9 +1,5 @@
     TO DO:
-    Smiley face
-    Drag to new start point?
     Undo/redo
-    Line width
-    Background colour
     Allow user to change turtle
     
     
@@ -26,3 +22,5 @@
     Save
     Change turtle state while pen off
     spirograph mode
+    Line width
+    Background colour

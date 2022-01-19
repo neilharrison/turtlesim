@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import colorchooser
+from tkinter import colorchooser, simpledialog
 from PIL import Image, ImageTk
 import pyscreenshot
 import numpy as np
@@ -17,6 +17,8 @@ class Turtle:
         self.load_sprite_canvas()
         self.pen = True
         self.colour = '#000000'
+        self.background_colour = '#FFFFFF'
+        self.line_width = 1
         self.angle = 0
         self.obs_flag = False
         self.turtle_flag = False
@@ -28,7 +30,7 @@ class Turtle:
         self.last_fill = None
         self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
         
-        
+
     def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
         self.unrotatedimage = image.resize((30,int(30*image.size[0]/image.size[1])))
@@ -93,7 +95,7 @@ class Turtle:
         buffer = 5
         if not overlap and not crash and (buffer < x < self.canvas.winfo_width()-buffer) and (buffer < y < self.canvas.winfo_height()-buffer):
             if self.pen:
-                self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=1, tag="line")
+                self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=self.line_width, tag="line")
             self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
             self.coords = np.array([x,y])
             self.canvas.update()
@@ -125,13 +127,23 @@ class Turtle:
 
     def pick_colour(self):
         self.colour = colorchooser.askcolor(title="Pick a colour!")[1] # [1] is the hex colour
+    
+    def set_line_width(self):
+         self.line_width = simpledialog.askinteger("Line Width", "What line width: ")
+
+    def set_background_colour(self):
+        self.background_colour = colorchooser.askcolor(title="Pick a background colour!")[1]
+        self.canvas.configure(bg=self.background_colour)
+
 
     def eraser(self):
-        if self.eraser_flag:
+        if self.eraser_flag: #Finished erasing
             self.colour = self.colour_old
+            self.line_width = 1
             self.eraser_flag = not self.eraser_flag
-        else:
+        else: #Started erasing
             self.colour_old = self.colour
+            self.line_width = 5
             self.colour = self.canvas["background"]
             self.eraser_flag = not self.eraser_flag
     
@@ -143,6 +155,10 @@ class Turtle:
         self.eraser_flag = False
         self.obs_flag = False
         self.colour = "black"
+        self.background_colour = '#FFFFFF'
+        self.canvas.configure(bg=self.background_colour)
+        self.line_width = 1
+       
         #self.load_sprite_canvas() loaded again in rotate
 
     def obstacle_mouse(self,xnew,ynew):

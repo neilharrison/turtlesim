@@ -34,6 +34,10 @@ def keypress_manager(event):
         turtle.spirograph_mode()
     elif event.keysym == "f":
         turtle.fill()
+    elif event.keysym == "l":
+        turtle.set_line_width()
+    elif event.keysym == "b":
+        turtle.set_background_colour()      
     elif event.keysym == "x":
         turtle.eraser()
     elif event.keysym == "r":
