@@ -1,6 +1,4 @@
     TO DO:
-    Undo/redo
-    
     
     
     DONE:
@@ -25,3 +23,4 @@
     Line width
     Background colour
     Allow user to change turtle
+    Undo/redo (Kind of)

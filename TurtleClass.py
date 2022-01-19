@@ -30,6 +30,7 @@ class Turtle:
         self.last_fill = None
         self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
 
+
     def ask_sprite_file(self):
         filename = filedialog.askopenfilename()
         self.load_sprite_file(filename)
@@ -94,13 +95,14 @@ class Turtle:
 
         if len(overlaps)>3 and not run_over:
             overlap = True
-        # print("...")     
+          
 
         buffer = 5
         if not overlap and not crash and (buffer < x < self.canvas.winfo_width()-buffer) and (buffer < y < self.canvas.winfo_height()-buffer):
             if self.pen_flag:
-                self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=self.line_width, tag="line")
+                self.last_line = self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=self.line_width, tag="line")
             self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
+            self.last_move = self.coords
             self.coords = np.array([x,y])
             self.canvas.update()
             if self.fill_flag:
@@ -164,6 +166,12 @@ class Turtle:
         self.canvas.configure(bg=self.background_colour)
         self.line_width = 1
         #self.load_sprite_canvas() loaded again in rotate
+
+    def undo(self):
+        self.canvas.delete(self.last_line)
+        if self.pen_flag: self.pen_on_off()
+        self.move_to(self.last_move[0],self.last_move[1])
+        self.pen_on_off()
 
     def obstacle_mouse(self,xnew,ynew):
         # Clicked outside canvas? usually when resizing window

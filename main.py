@@ -48,6 +48,8 @@ def keypress_manager(event):
         turtle.save_canvas(window.winfo_rootx(),window.winfo_rooty())
     elif event.keysym =="t":
         turtle.ask_sprite_file()
+    elif event.keysym =="BackSpace":
+        turtle.undo()
 
 def mouse_obs(event):
     turtle.obstacle_mouse(event.x,event.y)
