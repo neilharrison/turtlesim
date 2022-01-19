@@ -2,7 +2,7 @@
 
 <b>Keyboard commands:</b>
 
-Arrow keys and WASD: move turtle
+    Arrow keys and WASD: move turtle
 
     Q and E: rotate turtle
 
