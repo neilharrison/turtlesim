@@ -11,7 +11,7 @@ class Turtle:
     
     def __init__(self, canvas): 
         self.canvas = canvas
-        self.coords = np.array([150, 150])
+        self.coords = np.array([self.canvas.winfo_width()/2, self.canvas.winfo_height()/2])
         self.load_sprite_file()
         self.load_indicator_file()
         self.load_sprite_canvas()
@@ -28,7 +28,6 @@ class Turtle:
         self.fill_list = []
         self.fill_colour = "black"
         self.last_fill = None
-        self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
 
 
     def ask_sprite_file(self):
@@ -65,7 +64,57 @@ class Turtle:
         if not self.pen_flag: self.rotatedimage = self.rotatedimage.convert('LA').convert('RGBA')
         self.load_sprite_canvas()
 
+    def move_to(self,x,y,run_over=True):
+        #This is the main move function - all other move_ funcs call this 
+        #Run over flag is if we want to stop the turtle crossing its own path
+        crash = False
+        overlap = False
+        in_fill = False  
+        #Using canvas item tags to detect overlaps and collisions
+        overlaps = list(self.canvas.find_overlapping(self.coords[0], self.coords[1], x,y))
+        for i in overlaps:
+            if self.canvas.itemconfig(i)["tags"][-1] == "obstacle" or self.canvas.itemconfig(i)["tags"][-1] == "obstacle current":
+                crash = True
+            if self.canvas.itemconfig(i)["tags"][-1] == "fill":
+                in_fill = True
+        # Once an object is filled in, turtle needs to escape before it becomes an obstacle (solid)
+        if not in_fill and self.last_fill:
+            self.canvas.itemconfig(self.last_fill, tag="obstacle")
+            self.last_fill = None
+        
+        # normally, turtle + line (2) but when overlapping we get more than one line (>3)
+        if len(overlaps)>3 and not run_over:
+            overlap = True
+          
+        buffer = 5 
+        if not overlap and not crash and (buffer < x < self.canvas.winfo_width()-buffer) and (buffer < y < self.canvas.winfo_height()-buffer):
+            if self.pen_flag: #Pen is on -> draw a line
+                self.last_line = self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=self.line_width, tag="line")
+            self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
+            self.last_move = self.coords
+            self.coords = np.array([x,y])
+            self.canvas.update() # makes movements show on canvas before main function reached again
+            
+            if self.fill_flag: 
+                self.fill_list.append([self.coords[0],self.coords[1]])
+            return True
+        else: return False
+
+    def move_inc(self,x,y,run_over=True):
+        #Move function to move in increments of (roughly) 10
+        #This way the turtle will stop near where it crashed, instead of staying put
+        num_incs = math.ceil(np.linalg.norm(np.array([x,y])-self.coords)/10)+1
+        incs = np.linspace(self.coords,np.array([x,y]),num_incs)[1:]
+        for inc in incs:
+            if self.move_to(inc[0],inc[1]):
+                success = True 
+            else: 
+                success = False
+                break
+        return success
+        
     def move(self, dir, dist=10,run_over=True):
+        #convenience function for arrow key control
         if dir == "Up" or dir=="w":
             coord_change = np.array([0,-1])
         elif dir == "Down" or dir=="s":
@@ -78,51 +127,13 @@ class Turtle:
         coord_change = coord_change*dist
         return self.move_to(self.coords[0]+coord_change[0],self.coords[1]+coord_change[1],run_over)
 
-    def move_to(self,x,y,run_over=True):   
-        overlaps = list(self.canvas.find_overlapping(self.coords[0], self.coords[1], x,y))
-
-        crash = False
-        overlap = False
-        in_fill = False
-        for i in overlaps:
-            if self.canvas.itemconfig(i)["tags"][-1] == "obstacle" or self.canvas.itemconfig(i)["tags"][-1] == "obstacle current":
-                crash = True
-            if self.canvas.itemconfig(i)["tags"][-1] == "fill":
-                in_fill = True
-        if not in_fill and self.last_fill:
-            self.canvas.itemconfig(self.last_fill, tag="obstacle")
-            self.last_fill = None
-
-        if len(overlaps)>3 and not run_over:
-            overlap = True
-          
-
-        buffer = 5
-        if not overlap and not crash and (buffer < x < self.canvas.winfo_width()-buffer) and (buffer < y < self.canvas.winfo_height()-buffer):
-            if self.pen_flag:
-                self.last_line = self.canvas.create_line(self.coords[0], self.coords[1], x, y, fill=self.colour, width=self.line_width, tag="line")
-            self.canvas.move(self.turtle_sprite,x-self.coords[0],y-self.coords[1])
-            self.last_move = self.coords
-            self.coords = np.array([x,y])
-            self.canvas.update()
-            if self.fill_flag:
-                self.fill_list.append([self.coords[0],self.coords[1]])
-            return True
-        else: return False
-
-    def move_inc(self,x,y,run_over=True):
-        num_incs = math.ceil(np.linalg.norm(np.array([x,y])-self.coords)/10)+1
-        incs = np.linspace(self.coords,np.array([x,y]),num_incs)[1:]
-        success = True
-        for inc in incs:
-            if self.move_to(inc[0],inc[1]):
-                success = True 
-            else: 
-                success = False
-                break
-        return success
+    
         
     def pen_on_off(self):
+        if self.eraser_flag: #Turn off eraser if pen button is clicked
+            self.eraser_on_off()
+            self.pen_on_off()
+
         if  self.pen_flag: #pen off 
             self.canvas.delete(self.turtle_sprite)
             self.rotatedimage = self.rotatedimage.convert('LA').convert('RGBA')
@@ -132,19 +143,9 @@ class Turtle:
             self.pen_flag = not self.pen_flag
             self.rotate(0)
         
-
-    def pick_colour(self):
-        self.colour = colorchooser.askcolor(title="Pick a colour!")[1] # [1] is the hex colour
-    
-    def set_line_width(self):
-         self.line_width = simpledialog.askinteger("Line Width", "What line width: ")
-
-    def set_background_colour(self):
-        self.background_colour = colorchooser.askcolor(title="Pick a background colour!")[1]
-        self.canvas.configure(bg=self.background_colour)
-
-
-    def eraser(self):
+    def eraser_on_off(self):
+        if not self.pen_flag:self.pen_on_off() #Make sure pen is on to start erasing
+        
         if self.eraser_flag: #Finished erasing
             self.colour = self.colour_old
             self.line_width = 1
@@ -154,8 +155,17 @@ class Turtle:
             self.colour = self.canvas["background"]
         self.eraser_flag = not self.eraser_flag   
     
+    def set_colour(self):
+        self.colour = colorchooser.askcolor(title="Pick a colour!")[1] # [1] is the hex colour
+    
+    def set_line_width(self):
+         self.line_width = simpledialog.askinteger("Line Width", "What line width: ")
+
+    def set_background_colour(self):
+        self.background_colour = colorchooser.askcolor(title="Pick a background colour!")[1]
+        self.canvas.configure(bg=self.background_colour)
+
     def reset(self):
-        #slightly off centre but not a big issue
         self.coords=np.array([self.canvas.winfo_width()/2, self.canvas.winfo_height()/2])
         self.canvas.delete("all")
         self.rotate(-self.angle)
@@ -168,12 +178,18 @@ class Turtle:
         #self.load_sprite_canvas() loaded again in rotate
 
     def undo(self):
+        #Currently only undoes one move
+        # Could add an array of last_line objects/last_moves and move through them
         self.canvas.delete(self.last_line)
         if self.pen_flag: self.pen_on_off()
         self.move_to(self.last_move[0],self.last_move[1])
         self.pen_on_off()
 
     def obstacle_mouse(self,xnew,ynew):
+        #This function does two things 
+        # - creates obstacles when two corners are pressed
+        # - moves the turtle when the turtle is pressed initially 
+
         # Clicked outside canvas? usually when resizing window
         if self.within_range([xnew,ynew], [0,0],[self.canvas.winfo_width()-5, self.canvas.winfo_height()-20]): 
             # Check if first or second click
@@ -187,6 +203,7 @@ class Turtle:
             else: # Second click
                 if self.turtle_flag:
                     # self.move_to(xnew,ynew)
+                    self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
                     self.go_to_a_star(int(self.coords[1]/10),int(self.coords[0]/10),int(ynew/10),int(xnew/10))
                     self.turtle_flag = False
                 else:
@@ -196,33 +213,39 @@ class Turtle:
                     self.canvas.delete(self.obs_indicator)
                 self.obs_flag = False
     
-    def within_range(self,check,val1,val2):
-        return (val1[0]<=check[0]<=val2[0] or val2[0]<=check[0]<=val1[0]) and  (val1[1]<=check[1]<=val2[1] or val2[1]<=check[1]<=val1[1])
-
+    def square_obstacle(self,x1,y1,x2,y2):
+        self.canvas.create_rectangle(x1,y1,x2,y2,fill="black",tag="obstacle")
+        
     def obstacle_remove(self,x,y):
+        #This isnt the best way of detecting if the obstacle is clicked
+        # clicking on white space near obstacle will also delete obstacle
         item = self.canvas.find_closest(x,y)
         if self.canvas.itemconfig(item)["tags"][-1] == "obstacle" or self.canvas.itemconfig(item)["tags"][-1] == "obstacle current":
             self.canvas.delete(item)
         self.obs_flag = False
         self.canvas.delete(self.obs_indicator)
 
-    def square_obstacle(self,x1,y1,x2,y2):
-        self.canvas.create_rectangle(x1,y1,x2,y2,fill="black",tag="obstacle")
+     def within_range(self,check,val1,val2):
+        return (val1[0]<=check[0]<=val2[0] or val2[0]<=check[0]<=val1[0]) and  (val1[1]<=check[1]<=val2[1] or val2[1]<=check[1]<=val1[1])
 
     def fill(self):
-        if self.fill_flag:
+        #First call to function starts the move function to add moves to fill_list
+        #Second call creates a polygon with those coords
+        if self.fill_flag: # filling has finished
             self.fill_flag = False
             if self.fill_list != []:
                 self.do_filling()
             self.fill_list = []
             self.canvas.delete(self.fill_indicator)
-        else:
+        else: #Started filling - show user with indicator
             self.fill_flag = True
             self.fill_indicator = self.canvas.create_oval(self.canvas.winfo_width()-50,24,self.canvas.winfo_width()-40,14,fill="black")
             
     def do_filling(self):
+        #last filled object saved so turtle can escape before it becomes an obstacle
         self.last_fill = self.canvas.create_polygon(self.fill_list,fill=self.fill_colour, tag="fill")
     
+    ## Shapes
     def move_square(self,d):
         if self.pen_flag: self.pen_on_off()
         # Ugly but otherwise move is too quick, 
@@ -288,6 +311,7 @@ class Turtle:
         self.pen_on_off()
         
     def move_spiral(self):
+        #Unused but does make a nice spiral
         centre = self.coords
         x = centre[0]
         y = centre[1]
@@ -305,15 +329,16 @@ class Turtle:
                     self.canvas.update()
             j+=1
             
-
+    
     def hoover_mode(self):
-        self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
         #occupancy maps workspace into grid of 10 pixels
         #index [0,0] => ([idx]+1)*10 => pixel (10,10)
-    
+        self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
+        #Try to get to all points in occupancy map
         #do forward and backward pass in one go
         current = [self.coords[0],self.coords[1]]
-        for i in range(0,self.occupancy.shape[0]-1,2): 
+        for i in range(0,self.occupancy.shape[0]-1,2):
+            #Yes these could be put into a function and called 3 times 
             for j in range(0,self.occupancy.shape[1]):
                 if not self.occupancy[i][j]:
                     if self.move_inc((j+1)*10,(i+1)*10):
@@ -340,7 +365,7 @@ class Turtle:
                     else:
                         self.occupancy[i+1][j] = 2 
                         # self.go_to_a_star(current[0],current[1],i,j)
-        
+    
         
     
     def go_to_a_star(self,istart,jstart,igoal,jgoal):
@@ -372,7 +397,7 @@ class Turtle:
             #Exit if got to goal
             if (current == [igoal,jgoal]):
                 return True
-            
+            #Try to go to all neighbours
             for next in neighbours:
                 newpoint = [current[0] + next[0],current[1]+next[1]]
                 cr = "{},{}".format(current[0],current[1])

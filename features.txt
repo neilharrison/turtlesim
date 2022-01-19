@@ -1,6 +1,3 @@
-    TO DO:
-    
-    
     DONE:
     Colours
     Lines on off
