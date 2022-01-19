@@ -11,7 +11,7 @@ class Turtle:
     
     def __init__(self, canvas): 
         self.canvas = canvas
-        self.coords = np.array([self.canvas.winfo_width()/2, self.canvas.winfo_height()/2])
+        self.coords = np.array([150,150])
         self.load_sprite_file()
         self.load_indicator_file()
         self.load_sprite_canvas()
@@ -225,7 +225,7 @@ class Turtle:
         self.obs_flag = False
         self.canvas.delete(self.obs_indicator)
 
-     def within_range(self,check,val1,val2):
+    def within_range(self,check,val1,val2):
         return (val1[0]<=check[0]<=val2[0] or val2[0]<=check[0]<=val1[0]) and  (val1[1]<=check[1]<=val2[1] or val2[1]<=check[1]<=val1[1])
 
     def fill(self):
@@ -357,7 +357,7 @@ class Turtle:
                         # self.go_to_a_star(current[0],current[1],i,j)
         if not self.occupancy.shape[0]%2==0:
             #do remaining row if odd row number
-            for j in range(0,occupancy.shape[1]):
+            for j in range(0,self.occupancy.shape[1]):
                 if not self.occupancy[-1][j]:
                     if self.move_inc((j+1)*10,(self.occupancy.shape[0])*10):
                         self.occupancy[-1][j] = 1
@@ -378,7 +378,7 @@ class Turtle:
         cost_so_far[start] = 0
 
         neighbours = [[1,0],[0,1],[-1,0],[0,-1]]
-        self.pen_on_off()
+        if self.pen_flag: self.pen_on_off()
         while not frontier.empty():
             current = frontier.get()[1]
             cr = "{},{}".format(current[0],current[1])
