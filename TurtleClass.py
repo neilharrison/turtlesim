@@ -5,6 +5,7 @@ import pyscreenshot
 import numpy as np
 import math
 import random
+import queue
 
 class Turtle:
     
@@ -25,8 +26,9 @@ class Turtle:
         self.fill_list = []
         self.fill_colour = "black"
         self.last_fill = None
+        self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
         
-
+        
     def load_sprite_file(self, filename="turtle.png"):
         image = Image.open(filename)
         self.unrotatedimage = image.resize((30,int(30*image.size[0]/image.size[1])))
@@ -139,6 +141,7 @@ class Turtle:
         self.canvas.delete("all")
         self.rotate(-self.angle)
         self.eraser_flag = False
+        self.obs_flag = False
         self.colour = "black"
         #self.load_sprite_canvas() loaded again in rotate
 
@@ -155,10 +158,8 @@ class Turtle:
                 self.obs_flag = True
             else: # Second click
                 if self.turtle_flag:
-                    tmp_pen = self.pen # keep current pen state for when finished
-                    self.pen = False
-                    self.move_to(xnew,ynew)
-                    self.pen = tmp_pen
+                    # self.move_to(xnew,ynew)
+                    self.go_to_a_star(int(self.coords[1]/10),int(self.coords[0]/10),int(ynew/10),int(xnew/10))
                     self.turtle_flag = False
                 else:
                     # Check if new obstacle will enclose turtle
@@ -248,7 +249,7 @@ class Turtle:
         k = random.random()
         l = random.random()
         if self.pen: self.pen_on_off()
-        for i in range(361):
+        for i in range(150):
             x = centre[0]+100*((1-k)*math.cos(i)+l*k*math.cos(i*(1-k)/k))
             y = centre[1]+100*((1-k)*math.sin(i)-l*k*math.sin(i*(1-k)/k))
             if i == 1: self.pen_on_off()
@@ -257,33 +258,6 @@ class Turtle:
         self.move_to(centre[0],centre[1])
         self.pen_on_off()
         
-        
-    def free_space_spiral(self):
-        while self.move("Up",run_over=False):
-            self.canvas.update()
-        while self.move("Right",run_over=False):
-            self.canvas.update()
-        while self.move("Down",run_over=False):
-            self.canvas.update()
-        while self.move("Left",run_over=False):
-            self.canvas.update()
-        while self.move("Up",run_over=False):
-            self.canvas.update()
-    
-    def stuck_spiral(self, dist):
-        self.move("Right",dist)
-        self.canvas.update()
-        self.free_space_spiral()
-        self.move("Down",dist)
-        self.canvas.update()
-        self.free_space_spiral()
-        self.move("Left",dist)
-        self.canvas.update()
-        self.free_space_spiral()
-        self.move("Up",dist)
-        self.canvas.update()
-        self.free_space_spiral()
-
     def move_spiral(self):
         centre = self.coords
         x = centre[0]
@@ -304,41 +278,144 @@ class Turtle:
             
 
     def hoover_mode(self):
-        # for i in range(1000):
-        #     self.move_spiral()
-        #     new_coords = np.array([random.randint(0,300),random.randint(0,300)])
-        #     # new_coords = self.coords+np.array([random.randint(-100,100),random.randint(-100,100)])
-        #     self.move_to(new_coords[0],new_coords[1])
-        occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=bool)
+        self.occupancy = np.array(np.zeros([int((self.canvas.winfo_height()-10)/10)-1, int(self.canvas.winfo_width()/10)-1]),dtype=int)
         #occupancy maps workspace into grid of 10 pixels
         #index [0,0] => ([idx]+1)*10 => pixel (10,10)
-        # while not occupancy.all():
+    
         #do forward and backward pass in one go
-        for i in range(0,occupancy.shape[0]-1,2): 
-            for j in range(0,occupancy.shape[1]):
-                if not occupancy[i][j]:
+        current = [self.coords[0],self.coords[1]]
+        for i in range(0,self.occupancy.shape[0]-1,2): 
+            for j in range(0,self.occupancy.shape[1]):
+                if not self.occupancy[i][j]:
                     if self.move_inc((j+1)*10,(i+1)*10):
-                        occupancy[i][j] = True
-                    else: self.circle_obstacle(occupancy)
-            for j in reversed(range(0,occupancy.shape[1])):
-                if not occupancy[i+1][j]:
+                        self.occupancy[i][j] = 1
+                        current = [i,j]
+                    else:
+                        self.occupancy[i+1][j] = 2 
+                        # self.go_to_a_star(current[0],current[1],i,j)
+            for j in reversed(range(0,self.occupancy.shape[1])):
+                if not self.occupancy[i+1][j]:
                     if self.move_inc((j+1)*10,(i+2)*10):
-                        occupancy[i+1][j] = True
-        if not occupancy.shape[0]%2==0:
+                        self.occupancy[i+1][j] = 1
+                        current = [i,j]
+                    else:
+                        self.occupancy[i+1][j] = 2 
+                        # self.go_to_a_star(current[0],current[1],i,j)
+        if not self.occupancy.shape[0]%2==0:
             #do remaining row if odd row number
             for j in range(0,occupancy.shape[1]):
-                if not occupancy[-1][j]:
-                    if self.move_inc((j+1)*10,(occupancy.shape[0])*10):
-                        occupancy[-1][j] = True
+                if not self.occupancy[-1][j]:
+                    if self.move_inc((j+1)*10,(self.occupancy.shape[0])*10):
+                        self.occupancy[-1][j] = 1
+                        current = [i,j]
+                    else:
+                        self.occupancy[i+1][j] = 2 
+                        # self.go_to_a_star(current[0],current[1],i,j)
         
-        # print("Done")
-        # for i in range(30):
-        #     self.stuck_spiral(i*10)
-        #     self.canvas.update()
+        
     
-    def circle_obstacle(self,occupancy):
-        pass
+    def go_to_a_star(self,istart,jstart,igoal,jgoal):
+        frontier = queue.PriorityQueue()
+        frontier.put((0,[istart,jstart]))
+        came_from = dict()
+        cost_so_far = dict()
+        start = "{},{}".format(istart,jstart)
+        came_from[start] = None
+        cost_so_far[start] = 0
 
+        neighbours = [[1,0],[0,1],[-1,0],[0,-1]]
+        self.pen_on_off()
+        while not frontier.empty():
+            current = frontier.get()[1]
+            cr = "{},{}".format(current[0],current[1])
+            forward = came_from[cr]
+            moves = []
+            #Set pen on to draw final path
+            if (current == [igoal,jgoal]):
+                self.pen_on_off()
+            # Move back to current
+            while forward:
+                moves.append(forward)
+                cr = "{},{}".format(forward[0],forward[1])
+                forward = came_from[cr]
+            for move in reversed(moves):
+                self.move_to((move[1]+1)*10,(move[0]+1)*10)
+            #Exit if got to goal
+            if (current == [igoal,jgoal]):
+                return True
+            
+            for next in neighbours:
+                newpoint = [current[0] + next[0],current[1]+next[1]]
+                cr = "{},{}".format(current[0],current[1])
+                new_cost = cost_so_far[cr]+1
+                if self.within_boundaries(newpoint[0],newpoint[1]):
+                    #Update occupancy grid, exit if goal is in an obstacle 
+                    self.is_enclosed(newpoint[0],newpoint[1])
+                    if (self.occupancy[igoal][jgoal]==2):
+                        self.pen_on_off()
+                        return False
+                    #Move to new point, and back if successful
+                    if self.move_to((newpoint[1]+1)*10,(newpoint[0]+1)*10):
+                        self.move_to((current[1]+1)*10,(current[0]+1)*10)
+                        np = "{},{}".format(newpoint[0],newpoint[1])
+                        if np not in cost_so_far or new_cost<cost_so_far[np]:
+                            cost_so_far[np] = new_cost
+                            priority = new_cost + self.heuristic([igoal,jgoal],newpoint)
+                            frontier.put((priority,newpoint))
+                            came_from[np] = current
+                    else:
+                        #Wasnt able to move to new point -> obstacle
+                        self.occupancy[newpoint[0],newpoint[1]] = 2
+
+            #Move back to starting point
+            cr = "{},{}".format(current[0],current[1])
+            back = came_from[cr]
+            while back:
+                self.move_to((back[1]+1)*10,(back[0]+1)*10)
+                cr = "{},{}".format(back[0],back[1])
+                back = came_from[cr]
+
+        self.pen_on_off()
+        return False   
+            
+            
+    def heuristic(self,a,b):
+         # Manhattan distance on a square grid
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    def within_boundaries(self,i,j):
+        return 0 <= i < self.occupancy.shape[0] and 0 <= j < self.occupancy.shape[1]
+
+    def is_enclosed(self,i,j):
+        occupancy_new = np.copy(self.occupancy)
+        escaped=False
+        while occupancy_new[i][j]!= 2:
+            #This breaks if obstacle meets boundary
+            if not self.within_boundaries(i,j):
+                escaped = True
+                break
+            try: #Not the best way of including range checking
+                if occupancy_new[i-1][j] !=2:
+                    occupancy_new[i][j] =2
+                    i-=1
+                elif occupancy_new[i][j-1] !=2:
+                    occupancy_new[i][j] =2
+                    j-=1
+                elif occupancy_new[i+1][j] !=2:
+                    occupancy_new[i][j] =2
+                    i+=1
+                elif occupancy_new[i][j+1] !=2:
+                    occupancy_new[i][j] =2
+                    j+=1
+                else:
+                    occupancy_new[i][j] =2
+            except:
+                break
+        if not escaped:
+            self.occupancy = occupancy_new
+        
+        
+        
         
             
             

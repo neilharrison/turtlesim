@@ -16,7 +16,11 @@ M: Draw Square
 
 F: Fill Shape - press before and after drawing shape
 
+P: Spirograph Mode!
+
 H: Hoover Mode
+
+G: Save image
 
 Escape: Exit window
 
